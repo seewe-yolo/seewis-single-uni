@@ -30,6 +30,7 @@ import ViteRestart from 'vite-plugin-restart'
 import openDevTools from './scripts/open-dev-tools'
 import vitePluginEruda from './scripts/vite-plugin-eruda'
 import { createCopyNativeResourcesPlugin } from './vite-plugins/copy-native-resources'
+import injectAppJsonPlugin from './vite-plugins/inject-app-json-plugin'
 import syncManifestPlugin from './vite-plugins/sync-manifest-plugins'
 
 // https://vitejs.dev/config/
@@ -72,6 +73,8 @@ export default defineConfig(({ command, mode }) => {
     envDir: './env', // 自定义env目录
     base: VITE_APP_PUBLIC_BASE,
     plugins: [
+      // 构建后向 app.json 注入 lazyCodeLoading（uni 未投影 manifest 的该字段）
+      injectAppJsonPlugin(),
       // UniXXX 需要在 Uni 之前引入
       UniLayouts(),
       UniPlatform(),
@@ -88,7 +91,19 @@ export default defineConfig(({ command, mode }) => {
         // pages 目录为 src/pages，分包目录不能配置在pages目录下！！
         // 是个数组，可以配置多个，但是不能为pages里面的目录！！
         // "src/pages-demo" 是unibest demo 预留的，方便后续插入demo示例
-        subPackages: ['src/pages-demo'],
+        subPackages: [
+          'src/pages-demo',
+          // 工作台 Tab 承接：待办/预警/审批/消息
+          'src/pages-work',
+          // 扫码 Tab 承接：领用归还/出入库/盘点/点检/物资查询
+          'src/pages-material',
+          // 战时应急：就近点位/紧急出库/事后补录/事件登记
+          'src/pages-emergency',
+          // 安全学习 Tab 承接：学习任务/课程/考试/线下活动
+          'src/pages-training',
+          // 我的 Tab 承接：个人信息/培训档案/消息设置
+          'src/pages-profile',
+        ],
         dts: 'src/types/uni-pages.d.ts',
       }),
       // UniOptimization 插件需要 page.json 文件，故应在 UniPages 插件之后执行
@@ -165,6 +180,11 @@ export default defineConfig(({ command, mode }) => {
     ],
     define: {
       __VITE_APP_PROXY__: JSON.stringify(VITE_APP_PROXY_ENABLE),
+      // vue-i18n feature flags：让框架内嵌的 runtime 按裸布尔量裁剪（配套 pnpm patch 修复 9.1.9 dev 下恒触发警告的缺陷）
+      __VUE_I18N_FULL_INSTALL__: JSON.stringify(true),
+      __VUE_I18N_LEGACY_API__: JSON.stringify(false),
+      __VUE_I18N_PROD_DEVTOOLS__: JSON.stringify(false),
+      __INTLIFY_PROD_DEVTOOLS__: JSON.stringify(false),
     },
     css: {
       postcss: {

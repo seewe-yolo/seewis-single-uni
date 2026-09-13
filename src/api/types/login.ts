@@ -1,24 +1,58 @@
-// 认证模式类型
-export type AuthMode = 'single' | 'double'
-
-// 单Token响应类型
-export interface ISingleTokenRes {
-  token: string
-  expiresIn: number // 有效期(秒)
-}
-
-// 双Token响应类型
-export interface IDoubleTokenRes {
-  accessToken: string
-  refreshToken: string
-  accessExpiresIn: number // 访问令牌有效期(秒)
-  refreshExpiresIn: number // 刷新令牌有效期(秒)
+/**
+ * /auth/login 请求体（后端 LoginBody 及各认证策略的扩展字段）
+ */
+export interface ILoginBody {
+  /** 客户端id（sys_client 表配置，必填） */
+  clientId: string
+  /** 授权类型：password 账号密码 / xcx 微信小程序 */
+  grantType: 'password' | 'xcx'
+  /** 租户id（当前系统未启用多租户，固定 000000） */
+  tenantId?: string
+  /** 图形验证码（grantType=password 且后端开启验证码时必填） */
+  code?: string
+  /** 验证码唯一标识 */
+  uuid?: string
+  /** grantType=password：用户名 */
+  username?: string
+  /** grantType=password：密码 */
+  password?: string
+  /** grantType=xcx：小程序 appid（多个小程序时使用） */
+  appid?: string
+  /** grantType=xcx：wx.login 获取的授权 code */
+  xcxCode?: string
 }
 
 /**
- * 登录返回的信息，其实就是 token 信息
+ * /auth/register 请求体（后端 RegisterBody extends LoginBody）
  */
-export type IAuthLoginRes = ISingleTokenRes | IDoubleTokenRes
+export interface IRegisterBody extends ILoginBody {
+  /** 用户名（2-30 位） */
+  username: string
+  /** 密码（5-30 位） */
+  password: string
+  /** 用户类型 */
+  userType?: string
+}
+
+/**
+ * 登录返回的令牌信息（后端 LoginVo，字段为 snake_case）
+ */
+export interface IAuthLoginRes {
+  /** 授权令牌 */
+  access_token: string
+  /** 授权令牌有效期（秒） */
+  expire_in: number
+  /** 刷新令牌 */
+  refresh_token?: string
+  /** 刷新令牌有效期（秒） */
+  refresh_expire_in?: number
+  /** 应用id */
+  client_id?: string
+  /** 令牌权限 */
+  scope?: string
+  /** 用户 openid（grantType=xcx 时返回） */
+  openid?: string
+}
 
 /**
  * 用户信息
@@ -30,73 +64,29 @@ export interface IUserInfoRes {
   username: string
   nickname: string
   avatar?: string
-  /** 同时支持单角色和多角色，你自行选择一种就行 */
-  role?: UserRole
   roles?: UserRole[]
+  permissions?: string[]
   [key: string]: any // 允许其他扩展字段
 }
 
-// 认证存储数据结构
-export interface AuthStorage {
-  mode: AuthMode
-  tokens: ISingleTokenRes | IDoubleTokenRes
-  userInfo?: IUserInfoRes
-  loginTime: number // 登录时间戳
-}
-
 /**
- * 获取验证码
+ * /system/user/getInfo 响应（后端 UserInfoVo）
  */
-export interface ICaptcha {
-  captchaEnabled: boolean
-  uuid: string
-  image: string
-}
-/**
- * 上传成功的信息
- */
-export interface IUploadSuccessInfo {
-  fileId: number
-  originalName: string
-  fileName: string
-  storagePath: string
-  fileHash: string
-  fileType: string
-  fileBusinessType: string
-  fileSize: number
-}
-/**
- * 更新用户信息
- */
-export interface IUpdateInfo {
-  id: number
-  name: string
-  sex: string
-}
-/**
- * 更新用户信息
- */
-export interface IUpdatePassword {
-  id: number
-  oldPassword: string
-  newPassword: string
-  confirmPassword: string
-}
-
-/**
- * 判断是否为单Token响应
- * @param tokenRes 登录响应数据
- * @returns 是否为单Token响应
- */
-export function isSingleTokenRes(tokenRes: IAuthLoginRes): tokenRes is ISingleTokenRes {
-  return 'token' in tokenRes && !('refreshToken' in tokenRes)
-}
-
-/**
- * 判断是否为双Token响应
- * @param tokenRes 登录响应数据
- * @returns 是否为双Token响应
- */
-export function isDoubleTokenRes(tokenRes: IAuthLoginRes): tokenRes is IDoubleTokenRes {
-  return 'accessToken' in tokenRes && 'refreshToken' in tokenRes
+export interface IGetUserInfoRes {
+  /** 用户基本信息（后端 SysUserVo） */
+  user: {
+    userId: number
+    userName: string
+    nickName: string
+    /** 头像 ossId */
+    avatar?: string
+    /** 头像访问地址（由 ossId 翻译而来） */
+    avatarUrl?: string
+    userType?: string
+    [key: string]: any
+  }
+  /** 角色权限字集合 */
+  roles: string[]
+  /** 菜单权限字集合 */
+  permissions: string[]
 }

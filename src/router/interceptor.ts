@@ -3,11 +3,13 @@ import { isMp } from '@uni-helper/uni-env'
  * by 菲鸽 on 2025-08-19
  * 路由拦截，通常也是登录拦截
  * 黑、白名单的配置，请看 config.ts 文件， EXCLUDE_LOGIN_PATH_LIST
+ * 登录页已移除：未登录时不再跳转登录页，而是唤起全局登录弹窗（toLoginPage）
  */
 import { useTokenStore } from '@/store/token'
-import { isPageTabbar, tabbarStore } from '@/tabbar/store'
-import { getAllPages, getLastPage, HOME_PAGE, parseUrlToObj } from '@/utils/index'
-import { EXCLUDE_LOGIN_PATH_LIST, isNeedLoginMode, LOGIN_PAGE, LOGIN_PAGE_ENABLE_IN_MP } from './config'
+import { tabbarStore } from '@/tabbar/store'
+import { getAllPages, getLastPage, parseUrlToObj } from '@/utils/index'
+import { toLoginPage } from '@/utils/toLoginPage'
+import { EXCLUDE_LOGIN_PATH_LIST, isNeedLoginMode } from './config'
 
 export const FG_LOG_ENABLE = false
 
@@ -21,7 +23,7 @@ export function judgeIsExcludePath(path: string) {
 }
 
 export const navigateToInterceptor = {
-  // 注意，这里的url是 '/' 开头的，如 '/pages/index/index'，跟 'pages.json' 里面的 path 不同
+  // 注意，这里的url是 '/' 开头的，如 '/pages/work/index'，跟 'pages.json' 里面的 path 不同
   // 增加对相对路径的处理，BY 网友 @ideal
   invoke({ url, query }: { url: string, query?: Record<string, string> }) {
     if (url === undefined) {
@@ -59,37 +61,17 @@ export const navigateToInterceptor = {
     // 处理直接进入路由非首页时，tabbarIndex 不正确的问题
     tabbarStore.setAutoCurIdx(path)
 
-    // 小程序里面使用平台自带的登录，则不走下面的逻辑
-    if (isMp && !LOGIN_PAGE_ENABLE_IN_MP) {
+    // 小程序使用弹窗式登录（无登录页），路由不做登录拦截，由业务操作 / 401 响应唤起登录弹窗
+    if (isMp) {
       return true // 明确表示允许路由继续执行
     }
 
     const tokenStore = useTokenStore()
-    FG_LOG_ENABLE && console.log('tokenStore.hasLogin:', tokenStore.hasLogin)
 
-    // 不管黑白名单，登录了就直接去吧（但是当前不能是登录页）
+    // 已登录直接放行
     if (tokenStore.hasLogin) {
-      if (path !== LOGIN_PAGE) {
-        return true // 明确表示允许路由继续执行
-      }
-      else {
-        console.log('已经登录，但是还在登录页', myQuery.redirect)
-        const url = myQuery.redirect || HOME_PAGE
-        if (isPageTabbar(url)) {
-          uni.switchTab({ url })
-        }
-        else {
-          uni.navigateTo({ url })
-        }
-        return false // 明确表示阻止原路由继续执行
-      }
+      return true // 明确表示允许路由继续执行
     }
-    let fullPath = path
-
-    if (Object.keys(myQuery).length) {
-      fullPath += `?${Object.keys(myQuery).map(key => `${key}=${myQuery[key]}`).join('&')}`
-    }
-    const redirectUrl = `${LOGIN_PAGE}?redirect=${encodeURIComponent(fullPath)}`
 
     // #region 1/2 默认需要登录的情况(白名单策略) ---------------------------
     if (isNeedLoginMode) {
@@ -97,13 +79,9 @@ export const navigateToInterceptor = {
       if (judgeIsExcludePath(path)) {
         return true // 明确表示允许路由继续执行
       }
-      // 否则需要重定向到登录页
+      // 否则需要登录：唤起全局登录弹窗并阻止本次路由
       else {
-        if (path === LOGIN_PAGE) {
-          return true // 明确表示允许路由继续执行
-        }
-        FG_LOG_ENABLE && console.log('1 isNeedLogin(白名单策略) redirectUrl:', redirectUrl)
-        uni.navigateTo({ url: redirectUrl })
+        toLoginPage()
         return false // 明确表示阻止原路由继续执行
       }
     }
@@ -111,11 +89,10 @@ export const navigateToInterceptor = {
 
     // #region 2/2 默认不需要登录的情况(黑名单策略) ---------------------------
     else {
-      // 不需要登录里面的 EXCLUDE_LOGIN_PATH_LIST 表示黑名单，需要重定向到登录页
+      // 不需要登录里面的 EXCLUDE_LOGIN_PATH_LIST 表示黑名单，需要登录
       if (judgeIsExcludePath(path)) {
-        FG_LOG_ENABLE && console.log('2 isNeedLogin(黑名单策略) redirectUrl:', redirectUrl)
-        uni.navigateTo({ url: redirectUrl })
-        return false // 修改为false，阻止原路由继续执行
+        toLoginPage()
+        return false // 明确表示阻止原路由继续执行
       }
       return true // 明确表示允许路由继续执行
     }

@@ -1,5 +1,6 @@
 {
-  "tabbar.home": "Home",
+  "tabbar.home": "Workbench",
+  "tabbar.scan": "Scan",
   "tabbar.about": "About",
   "tabbar.me": "Me",
   "tabbar.i18n": "I18n",

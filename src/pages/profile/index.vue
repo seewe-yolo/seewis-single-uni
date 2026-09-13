@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia'
-import { LOGIN_PAGE } from '@/router/config'
+import { useToast } from '@wot-ui/ui'
+import { toLoginPage } from '@/utils/toLoginPage'
+import { useConfirmDialog } from '@/utils/dialog'
+import { logout } from '@/services/auth'
 import { useUserStore } from '@/store'
 import { useTokenStore } from '@/store/token'
 
@@ -15,49 +18,38 @@ const tokenStore = useTokenStore()
 // 使用storeToRefs解构userInfo
 const { userInfo } = storeToRefs(userStore)
 
-// 微信小程序下登录
-async function handleLogin() {
-  // #ifdef MP-WEIXIN
-  // 微信登录
-  await tokenStore.wxLogin()
+// 必须在 setup 顶层调用（内部依赖 inject）
+const confirmDialog = useConfirmDialog()
+const toast = useToast()
 
-  // #endif
-  // #ifndef MP-WEIXIN
-  uni.navigateTo({
-    url: `${LOGIN_PAGE}`,
-  })
-  // #endif
+// 登录：唤起全局登录弹窗（微信一键登录）
+function handleLogin() {
+  toLoginPage()
 }
 
-function handleLogout() {
-  uni.showModal({
-    title: '提示',
-    content: '确定要退出登录吗？',
-    success: (res) => {
-      if (res.confirm) {
-        // 清空用户信息
-        useTokenStore().logout()
-        // 执行退出登录逻辑
-        uni.showToast({
-          title: '退出登录成功',
-          icon: 'success',
-        })
-        // #ifdef MP-WEIXIN
-        // 微信小程序，去首页
-        // uni.reLaunch({ url: '/pages/index/index' })
-        // #endif
-        // #ifndef MP-WEIXIN
-        // 非微信小程序，去登录页
-        // uni.navigateTo({ url: LOGIN_PAGE })
-        // #endif
-      }
-    },
-  })
+async function handleLogout() {
+  if (!(await confirmDialog('确定要退出登录吗？'))) {
+    return
+  }
+  // 退出登录：注销后端会话并清空本地登录态与用户信息
+  await logout()
+  // 执行退出登录逻辑
+  toast.success('退出登录成功')
+  // #ifdef MP-WEIXIN
+  // 微信小程序，去首页
+  // uni.reLaunch({ url: '/pages/work/index' })
+  // #endif
+  // #ifndef MP-WEIXIN
+  // 非微信小程序，去登录页
+  // uni.navigateTo({ url: LOGIN_PAGE })
+  // #endif
 }
 </script>
 
 <template>
   <view class="profile-container">
+    <wd-toast />
+    <wd-dialog />
     <view class="mt-3 break-all px-3 text-center text-green-500">
       {{ userInfo.username ? '已登录' : '未登录' }}
     </view>

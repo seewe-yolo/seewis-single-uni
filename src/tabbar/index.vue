@@ -13,15 +13,8 @@ defineOptions({
 // #endif
 
 /**
- * 中间的鼓包tabbarItem的点击事件
+ * tabbarItem 的点击事件（含中间鼓包项，鼓包同样是正常 Tab 页，需切换）
  */
-function handleClickBulge() {
-  uni.showToast({
-    title: '点击了中间的鼓包tabbarItem',
-    icon: 'none',
-  })
-}
-
 function handleClick(index: number) {
   // 点击原来的不做操作
   if (index === tabbarStore.curIdx) {
@@ -29,10 +22,6 @@ function handleClick(index: number) {
   }
   const list = tabbarList.value
   if (!list[index]) {
-    return
-  }
-  if (list[index].isBulge) {
-    handleClickBulge()
     return
   }
   const url = list[index].pagePath
@@ -53,9 +42,6 @@ onLoad(() => {
     fail(err) {
       console.log('hideTabBar fail: ', err)
     },
-    success(res) {
-      // console.log('hideTabBar success: ', res)
-    },
   })
 })
 // #endif
@@ -67,9 +53,6 @@ onMounted(() => {
   && uni.hideTabBar({
     fail(err) {
       console.log('hideTabBar fail: ', err)
-    },
-    success(res) {
-      // console.log('hideTabBar success: ', res)
     },
   })
 })
@@ -87,9 +70,9 @@ onShow(() => {
 </script>
 
 <template>
-  <view v-if="customTabbarEnable" class="h-50px pb-safe">
-    <view class="border-and-fixed bg-white" @touchmove.stop.prevent>
-      <view class="h-50px flex items-center">
+  <view v-if="customTabbarEnable" class="h-56px pb-safe">
+    <view class="capsule-fixed rounded-full bg-white" @touchmove.stop.prevent>
+      <view class="h-56px flex items-center px-2">
         <view
           v-for="(item, index) in tabbarList" :key="index"
           class="flex flex-1 flex-col items-center justify-center"
@@ -105,40 +88,45 @@ onShow(() => {
           <TabbarItem v-else :item="item" :index="index" class="relative px-3 text-center" />
         </view>
       </view>
-
-      <view class="pb-safe" />
     </view>
   </view>
 </template>
 
 <style scoped lang="scss">
-.border-and-fixed {
+// 胶囊状悬浮 tabbar：距底部为安全区距离，左右留边悬浮
+.capsule-fixed {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: env(safe-area-inset-bottom);
+  left: 32rpx;
+  right: 32rpx;
   z-index: 1000;
-  border-top: 1px solid #eee;
   box-sizing: border-box;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.12);
 }
-// 中间鼓包的样式
+// 中间悬浮按钮：真实尺寸圆钮（不缩放，边缘清晰平滑），白环与胶囊衔接，浮起带柔和投影
 .bulge {
   position: absolute;
-  top: -20px;
+  top: 0;
   left: 50%;
-  transform-origin: top center;
-  transform: translateX(-50%) scale(0.5) translateY(-33%);
+  transform: translate(-50%, -66%);
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 250rpx;
-  height: 250rpx;
+  box-sizing: border-box;
+  width: 120rpx;
+  height: 120rpx;
+  border: 8rpx solid #fff;
   border-radius: 50%;
-  background-color: #fff;
-  box-shadow: inset 0 0 0 1px #fefefe;
+  background: linear-gradient(160deg, #56a8f5 0%, var(--wot-color-theme, #1890ff) 100%);
+  color: #fff;
+  box-shadow: 0 10rpx 24rpx rgba(24, 144, 255, 0.35);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:active {
-    // opacity: 0.8;
+    transform: translate(-50%, -64%) scale(0.94);
+    box-shadow: 0 6rpx 14rpx rgba(24, 144, 255, 0.3);
   }
 }
 </style>

@@ -1,5 +1,5 @@
 {
-  "name": "seewis-uni",
+  "name": "src-uni",
   "type": "module",
   "version": "1.0.0",
   "unibest": {
@@ -134,16 +134,17 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-4070620250821001",
     "@dcloudio/uni-mp-xhs": "3.0.0-4070620250821001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-4070620250821001",
+    "@qiun/ucharts": "2.5.0-20230101",
+    "@wot-ui/ui": "latest",
     "abortcontroller-polyfill": "^1.7.8",
     "dayjs": "1.11.10",
     "pinia": "2.0.36",
     "pinia-plugin-persistedstate": "3.2.1",
+    "pnpm": "^12.4.1",
     "vue": "^3.4.21",
-    "vue-i18n": "9.1.9",
+    "vue-i18n": "9.2.2",
     "vue-router": "4.5.1",
-    "z-paging": "2.8.7",
-    "@qiun/ucharts": "2.5.0-20230101",
-    "@wot-ui/ui": "latest"
+    "z-paging": "2.8.7"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -199,11 +200,6 @@
     "vite-plugin-vue-devtools": "^8.0.5",
     "vitest": "3.2.4",
     "vue-tsc": "^3.0.6"
-  },
-  "pnpm": {
-    "overrides": {
-      "unconfig": "7.3.2"
-    }
   },
   "overrides": {
     "unconfig": "7.3.2"

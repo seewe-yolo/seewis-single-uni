@@ -1,5 +1,8 @@
 import type { Preset } from 'unocss'
 import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
+// 显式引入 carbon 图标集：pnpm 严格 node_modules 下 presetIcons 默认解析不到，
+// 导致 "failed to load icon" 且所有 carbon 图标无 CSS（详见 collections 注释）
+import carbonIcons from '@iconify-json/carbon/icons.json'
 
 // https://www.npmjs.com/package/@uni-helper/unocss-preset-uni
 import { presetUni } from '@uni-helper/unocss-preset-uni'
@@ -25,6 +28,9 @@ export default defineConfig({
         'vertical-align': 'middle',
       },
       collections: {
+        // 显式注册 carbon 图标集：修复 pnpm 严格依赖下 "failed to load icon" 问题
+        // 注意：值必须是返回 IconifyJSON 的函数，直接传对象会被当作 SVG 字符串解析而失败
+        'carbon': () => carbonIcons as any,
         // 注册本地 SVG 图标集合, 从本地文件系统加载图标
         // 在 './src/static/my-icons' 目录下的所有 svg 文件将被注册为图标，
         // my-icons 是图标集合名称，使用 `i-my-icons-图标名` 调用
@@ -76,6 +82,7 @@ export default defineConfig({
   safelist: [
     'i-carbon-code',
     'i-carbon-home',
+    'i-carbon-scan',
     'i-carbon-user',
     'i-carbon-ibm-watson-language-translator',
     'i-carbon-menu',

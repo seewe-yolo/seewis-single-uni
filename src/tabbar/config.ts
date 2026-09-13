@@ -26,13 +26,19 @@ export const nativeTabbarList: NativeTabBarItem[] = [
   {
     iconPath: 'static/tabbar/home.png',
     selectedIconPath: 'static/tabbar/homeHL.png',
-    pagePath: 'pages/index/index',
+    pagePath: 'pages/work/index',
     text: '%tabbar.home%',
+  },
+  {
+    iconPath: 'static/tabbar/scan.png',
+    selectedIconPath: 'static/tabbar/scan.png',
+    pagePath: 'pages/material/index',
+    text: '%tabbar.scan%',
   },
   {
     iconPath: 'static/tabbar/personal.png',
     selectedIconPath: 'static/tabbar/personalHL.png',
-    pagePath: 'pages/me/me',
+    pagePath: 'pages/profile/index',
     text: '%tabbar.me%',
   },
 ]
@@ -42,7 +48,7 @@ export const nativeTabbarList: NativeTabBarItem[] = [
 export const customTabbarList: CustomTabBarItem[] = [
   {
     text: '%tabbar.home%',
-    pagePath: 'pages/index/index',
+    pagePath: 'pages/work/index',
     // 注意 unocss 图标需要如下处理：（二选一）
     // 1）在fg-tabbar.vue页面上引入一下并注释掉（见tabbar/index.vue代码第2行）
     // 2）配置到 unocss.config.ts 的 safelist 中
@@ -50,19 +56,16 @@ export const customTabbarList: CustomTabBarItem[] = [
     icon: 'i-carbon-home',
     // badge: 'dot',
   },
-  // 鼓包配置示例（2025-12-31）
-  // 中间鼓包tabbarItem配置：通常是扫描按钮、发布按钮、更多按钮等，点击触发业务逻辑
-  // {
-  //   pagePath: 'pages/me/me',
-  //   text: '我的',
-  //   // 1）在fg-tabbar.vue页面上引入一下并注释掉（见tabbar/index.vue代码第2行）
-  //   // 2）配置到 unocss.config.ts 的 safelist 中
-  //   iconType: 'image',
-  //   icon: '/static/tabbar/scan.png',
-  //   isBulge: true,
-  // },
+  // 中央鼓包：统一扫码器（按码类型路由：物资码/盘点码/签到码/应急柜码）
   {
-    pagePath: 'pages/me/me',
+    text: '%tabbar.scan%',
+    pagePath: 'pages/material/index',
+    iconType: 'unocss',
+    icon: 'i-carbon-scan',
+    isBulge: true,
+  },
+  {
+    pagePath: 'pages/profile/index',
     text: '%tabbar.me%',
     iconType: 'unocss',
     icon: 'i-carbon-user',
@@ -72,14 +75,14 @@ export const customTabbarList: CustomTabBarItem[] = [
   // 其他类型演示
   // 1、uiLib
   // {
-  //   pagePath: 'pages/index/index',
+  //   pagePath: 'pages/work/index',
   //   text: '首页',
   //   iconType: 'uiLib',
   //   icon: 'home',
   // },
   // 2、iconfont
   // {
-  //   pagePath: 'pages/index/index',
+  //   pagePath: 'pages/work/index',
   //   text: '首页',
   //   // 注意 iconfont 图标需要额外加上 'iconfont'，如下
   //   iconType: 'iconfont',
@@ -87,7 +90,7 @@ export const customTabbarList: CustomTabBarItem[] = [
   // },
   // 3、image
   // {
-  //   pagePath: 'pages/index/index',
+  //   pagePath: 'pages/work/index',
   //   text: '首页',
   //   // 使用 ‘image’时，需要配置 icon + iconActive 2张图片
   //   iconType: 'image',

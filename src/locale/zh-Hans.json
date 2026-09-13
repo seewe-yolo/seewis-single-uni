@@ -1,5 +1,6 @@
 {
-  "tabbar.home": "首页",
+  "tabbar.home": "工作台",
+  "tabbar.scan": "扫码",
   "tabbar.about": "关于",
   "tabbar.me": "我的",
   "tabbar.i18n": "多语言",

@@ -1,0 +1,6 @@
+onlyBuiltDependencies:
+  - pnpm
+overrides:
+  unconfig: 7.3.2
+patchedDependencies:
+  '@dcloudio/uni-cli-shared@3.0.0-4070620250821001': patches/@dcloudio__uni-cli-shared@3.0.0-4070620250821001.patch

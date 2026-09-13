@@ -25,8 +25,6 @@ declare global {
 
   interface IUserToken {
     token: string
-    refreshToken?: string
-    refreshExpire?: number
   }
 }
 

@@ -119,10 +119,14 @@ export default defineManifestConfig({
   /* 小程序特有相关 */
   'mp-weixin': {
     appid: VITE_WX_APPID,
+    // 锁定调试基础库版本：3.17.2 存在渲染层 FLOW_* 框架缺陷（见官方社区），锁定官方确认可用的 3.11.3
+    libVersion: '3.11.3',
+    // 按需注入：启动仅注入当前页面需要的 JS 与组件，避免 38 个页面全量注入拖慢模拟器/真机启动（基础库 2.11.1+）
+    lazyCodeLoading: 'requiredComponents',
     setting: {
       urlCheck: false,
-      // 是否启用 ES6 转 ES5
-      es6: true,
+      // 关闭 ES6 转 ES5：uni CLI 产物已是可用格式，开发者工具再转译一次会显著拖慢模拟器加载（官方建议关闭）
+      es6: false,
       minified: true,
     },
     optimization: {

@@ -1,14 +1,8 @@
-import type { IDoubleTokenRes } from '@/api/types/login'
 import type { CustomRequestOptions, HttpError, IResponse } from '@/http/types'
-import { nextTick } from 'vue'
+import { useUserStore } from '@/store/user'
 import { useTokenStore } from '@/store/token'
-import { isDoubleTokenMode } from '@/utils'
 import { toLoginPage } from '@/utils/toLoginPage'
 import { createHttpError, getResponseMessage, HttpErrorType, isSuccessResultCode, ResultEnum, ShowMessage } from './tools/enum'
-
-// 刷新 token 状态管理
-let refreshing = false // 防止重复刷新 token 标识
-let taskQueue: (() => void)[] = [] // 刷新 token 请求队列
 
 export function http<T>(options: CustomRequestOptions) {
   // 1. 返回 Promise 对象
@@ -28,74 +22,10 @@ export function http<T>(options: CustomRequestOptions) {
         const isTokenExpired = res.statusCode === 401 || code === ResultEnum.Unauthorized
 
         if (isTokenExpired) {
-          const tokenStore = useTokenStore()
-          if (!isDoubleTokenMode) {
-            // 未启用双token策略，清理用户信息，跳转到登录页
-            tokenStore.logout()
-            toLoginPage()
-            return reject(createHttpError({
-              type: HttpErrorType.Auth,
-              code,
-              statusCode: res.statusCode,
-              message: getResponseMessage(responseData, '登录已过期，请重新登录'),
-              data: responseData?.data,
-              raw: res,
-            }))
-          }
-
-          /* -------- 无感刷新 token ----------- */
-          const { refreshToken } = tokenStore.tokenInfo as IDoubleTokenRes || {}
-          // token 失效的，且有刷新 token 的，才放到请求队列里
-          if (refreshToken) {
-            taskQueue.push(() => {
-              resolve(http<T>(options))
-            })
-          }
-
-          // 如果有 refreshToken 且未在刷新中，发起刷新 token 请求
-          if (refreshToken && !refreshing) {
-            refreshing = true
-            try {
-              // 发起刷新 token 请求（使用 store 的 refreshToken 方法）
-              await tokenStore.refreshToken()
-              // 刷新 token 成功
-              refreshing = false
-              nextTick(() => {
-                // 关闭其他弹窗
-                uni.hideToast()
-                uni.showToast({
-                  title: 'token 刷新成功',
-                  icon: 'none',
-                })
-              })
-              // 将任务队列的所有任务重新请求
-              taskQueue.forEach(task => task())
-            }
-            catch (refreshErr) {
-              console.error('刷新 token 失败:', refreshErr)
-              refreshing = false
-              // 刷新 token 失败，跳转到登录页
-              nextTick(() => {
-                // 关闭其他弹窗
-                uni.hideToast()
-                uni.showToast({
-                  title: '登录已过期，请重新登录',
-                  icon: 'none',
-                })
-              })
-              // 清除用户信息
-              await tokenStore.logout()
-              // 跳转到登录页
-              setTimeout(() => {
-                toLoginPage()
-              }, 2000)
-            }
-            finally {
-              // 不管刷新 token 成功与否，都清空任务队列
-              taskQueue = []
-            }
-          }
-
+          // 单token模式：登录失效，仅清除本地登录态（会话已在服务端失效，无需请求退出接口）并唤起登录弹窗
+          useTokenStore().clear()
+          useUserStore().clearUserInfo()
+          toLoginPage()
           return reject(createHttpError({
             type: HttpErrorType.Auth,
             code,

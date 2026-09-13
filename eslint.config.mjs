@@ -57,4 +57,22 @@ export default uniHelper({
      */
     html: true,
   },
+}).append({
+  // 轻提示统一走 wd-toast（useToast）：uni.showToast 仅允许在基础设施层使用
+  files: ['src/**/*.{ts,tsx,vue}'],
+  ignores: [
+    'src/store/**',
+    'src/http/**',
+    // 上传基础设施与演示代码：非组件上下文，允许原生 toast
+    'src/utils/uploadFile.ts',
+    'src/utils/i18n.ts',
+    // 第三方图表组件拷贝副本
+    'src/components/qiun-data-charts/**',
+  ],
+  rules: {
+    'no-restricted-syntax': ['error', {
+      selector: 'CallExpression[callee.object.name="uni"][callee.property.name="showToast"]',
+      message: '轻提示请使用 wd-toast 的 useToast（页面/组件 setup 内调用，模板挂载 <wd-toast />）；uni.showToast 仅允许在 store/http/上传基础设施层使用',
+    }],
+  },
 })

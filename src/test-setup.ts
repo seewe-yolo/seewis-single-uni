@@ -33,6 +33,8 @@ const uniMock = {
   chooseImage: vi.fn(),
   getSystemInfoSync: vi.fn().mockReturnValue({ platform: 'devtools' }),
   getSystemInfo: vi.fn(),
+  // locale/index.ts 模块加载时调用
+  getLocale: vi.fn().mockReturnValue('zh-Hans'),
   onNetworkStatusChange: vi.fn(),
   getNetworkType: vi.fn(),
 }
@@ -45,7 +47,7 @@ Object.defineProperty(globalThis, 'uni', {
 
 // getCurrentPages 是 uni-app 的全局函数（不在 uni 对象上）
 Object.defineProperty(globalThis, 'getCurrentPages', {
-  value: vi.fn().mockReturnValue([{ route: '/pages/index/index' }]),
+  value: vi.fn().mockReturnValue([{ route: '/pages/work/index' }]),
   writable: true,
   configurable: true,
 })

@@ -1,9 +1,6 @@
 import type { IUserInfoRes } from '@/api/types/login'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import {
-  getUserInfo,
-} from '@/api/login'
 
 // 初始化状态
 const userInfoState: IUserInfoRes = {
@@ -13,6 +10,10 @@ const userInfoState: IUserInfoRes = {
   avatar: '/static/images/default-avatar.png',
 }
 
+/**
+ * 用户信息状态仓库：只负责用户信息的缓存与持久化
+ * 用户信息的获取与映射逻辑见 @/services/auth 的 fetchUserInfo
+ */
 export const useUserStore = defineStore(
   'user',
   () => {
@@ -20,7 +21,6 @@ export const useUserStore = defineStore(
     const userInfo = ref<IUserInfoRes>({ ...userInfoState })
     // 设置用户信息
     const setUserInfo = (val: IUserInfoRes) => {
-      console.log('设置用户信息', val)
       // 若头像为空 则使用默认头像
       if (!val.avatar) {
         val.avatar = userInfoState.avatar
@@ -29,8 +29,6 @@ export const useUserStore = defineStore(
     }
     const setUserAvatar = (avatar: string) => {
       userInfo.value.avatar = avatar
-      console.log('设置用户头像', avatar)
-      console.log('userInfo', userInfo.value)
     }
     // 删除用户信息
     const clearUserInfo = () => {
@@ -38,19 +36,9 @@ export const useUserStore = defineStore(
       uni.removeStorageSync('user')
     }
 
-    /**
-     * 获取用户信息
-     */
-    const fetchUserInfo = async () => {
-      const res = await getUserInfo()
-      setUserInfo(res)
-      return res
-    }
-
     return {
       userInfo,
       clearUserInfo,
-      fetchUserInfo,
       setUserInfo,
       setUserAvatar,
     }

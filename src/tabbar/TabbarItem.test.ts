@@ -10,7 +10,7 @@ vi.mock('./store', () => ({
 
 const baseItem: CustomTabBarItem = {
   text: '首页',
-  pagePath: 'pages/index/index',
+  pagePath: 'pages/work/index',
   iconType: 'unocss',
   icon: 'i-carbon-home',
 }

@@ -3,8 +3,22 @@ import process from 'node:process'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vitest/config'
 
+// pages.json 由 uni-pages 生成，含整行 // 注释（JSONC），vite 内置 json 插件无法解析。
+// 仅剥离「整行注释」（以可选空白 + // 开头的行），不影响字符串内的 URL
+function stripPagesJsonComments() {
+  return {
+    name: 'vitest-strip-pages-json-comments',
+    enforce: 'pre' as const,
+    transform(code: string, id: string) {
+      if (id.endsWith('src/pages.json')) {
+        return { code: code.replace(/^\s*\/\/.*$/gm, ''), map: null }
+      }
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [stripPagesJsonComments(), vue()],
   test: {
     environment: 'jsdom',
     globals: true,

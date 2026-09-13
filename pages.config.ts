@@ -3,8 +3,9 @@ import { tabBar } from './src/tabbar/config'
 
 export default defineUniPages({
   globalStyle: {
-    navigationStyle: 'default',
-    navigationBarTitleText: 'unibest',
+    // 全局自定义导航栏（wd-navbar），由布局中的 FgNavbar 统一渲染
+    navigationStyle: 'custom',
+    navigationBarTitleText: '安储云',
     navigationBarBackgroundColor: '#f8f8f8',
     navigationBarTextStyle: 'black',
     backgroundColor: '#FFFFFF',
@@ -16,7 +17,7 @@ export default defineUniPages({
       '^(?!z-paging-refresh|z-paging-load-more)z-paging(.*)':
         'z-paging/components/z-paging$1/z-paging$1.vue',
       '^wd-(.*)': '@wot-ui/ui/components/wd-$1/wd-$1.vue',
-},
+    },
   },
   // tabbar 的配置统一在 “./src/tabbar/config.ts” 文件中
   subPackages: [{
