@@ -1,0 +1,16 @@
+diff --git a/lib/vue-i18n/dist/vue-i18n.runtime.esm-bundler.js b/lib/vue-i18n/dist/vue-i18n.runtime.esm-bundler.js
+index 0000000..1111111 100644
+--- a/lib/vue-i18n/dist/vue-i18n.runtime.esm-bundler.js
++++ b/lib/vue-i18n/dist/vue-i18n.runtime.esm-bundler.js
+@@ -39,9 +39,8 @@ function initFeatureFlags() {
+     if (typeof __INTLIFY_PROD_DEVTOOLS__ !== 'boolean') {
+         getGlobalThis().__INTLIFY_PROD_DEVTOOLS__ = false;
+     }
+-    if ((process.env.NODE_ENV !== 'production') && typeof true === 'boolean') {
+-        needWarn = true;
+-    }
++    // [SafeResCloud patch] 移除 vue-i18n@9.1.9 在此误植的恒真判断 `(dev) && typeof true === 'boolean'`，
++    // 它导致 dev 下无论如何配置 feature flags 都会打印 esm-bundler 警告（官方 9.2 已移除该判断）
+     if ((process.env.NODE_ENV !== 'production') && needWarn) {
+         console.warn(`You are running the esm-bundler build of vue-i18n. It is recommended to ` +
+             `configure your bundler to explicitly replace feature flag globals ` +
