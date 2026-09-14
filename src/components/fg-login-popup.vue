@@ -85,7 +85,7 @@ async function handleWxLogin() {
           block
           :loading="loading"
           :disabled="loading"
-          custom-style="height:96rpx;border:none;border-radius:24rpx;background:#9f1d24;color:#ffffff;font-size:30rpx;font-weight:600;box-shadow:0 12rpx 28rpx rgba(159,29,36,0.2);"
+          custom-style="height:96rpx;border:none;border-radius:24rpx;background:#165DFF;color:#ffffff;font-size:30rpx;font-weight:600;box-shadow:0 12rpx 28rpx rgba(22,93,255,0.22);"
           @click="handleWxLogin"
         >
           <view class="login-submit-content">
@@ -129,8 +129,8 @@ async function handleWxLogin() {
   isolation: isolate;
   overflow: hidden;
   padding: 16rpx 40rpx 0;
-  color: #292827;
-  background: #f6f4f1;
+  color: #1d2129;
+  background: #f2f3f5;
 }
 
 .login-sheet > view {
@@ -143,7 +143,7 @@ async function handleWxLogin() {
   z-index: 0;
   top: 42rpx;
   right: -72rpx;
-  color: #9f1d24;
+  color: #165dff;
   font-size: 520rpx;
   font-weight: 800;
   line-height: 0.9;
@@ -174,8 +174,8 @@ async function handleWxLogin() {
   width: 68rpx;
   height: 68rpx;
   border-radius: 18rpx;
-  background: #9f1d24;
-  box-shadow: 0 8rpx 20rpx rgb(159 29 36 / 18%);
+  background: #165dff;
+  box-shadow: 0 8rpx 20rpx rgb(22 93 255 / 18%);
 }
 
 .login-brand {
@@ -186,7 +186,7 @@ async function handleWxLogin() {
 }
 
 .login-eyebrow {
-  color: #9f1d24;
+  color: #165dff;
   font-size: 22rpx;
   font-weight: 600;
   letter-spacing: 2rpx;
@@ -215,7 +215,7 @@ async function handleWxLogin() {
 .login-subtitle {
   display: block;
   margin-top: 14rpx;
-  color: #77736d;
+  color: #4e5969;
   font-size: 25rpx;
   line-height: 1.65;
 }
@@ -224,8 +224,8 @@ async function handleWxLogin() {
   display: flex;
   margin-top: 30rpx;
   padding: 22rpx 0;
-  border-top: 1rpx solid #e5dfd8;
-  border-bottom: 1rpx solid #e5dfd8;
+  border-top: 1rpx solid #f2f3f5;
+  border-bottom: 1rpx solid #f2f3f5;
 }
 
 .login-trust-item {
@@ -233,10 +233,10 @@ async function handleWxLogin() {
   flex: 1;
   flex-direction: column;
   align-items: center;
-  color: #77736d;
+  color: #4e5969;
   font-size: 22rpx;
   line-height: 1.4;
-  border-right: 1rpx solid #eeeae4;
+  border-right: 1rpx solid #f2f3f5;
 }
 
 .login-trust-item-last {
@@ -245,7 +245,7 @@ async function handleWxLogin() {
 
 .login-trust-icon {
   margin-bottom: 8rpx;
-  color: #9f1d24;
+  color: #165dff;
   font-size: 30rpx;
 }
 
@@ -284,21 +284,21 @@ async function handleWxLogin() {
 }
 
 .login-checkbox-checked {
-  border-color: #9f1d24;
-  background: #9f1d24;
+  border-color: #165dff;
+  background: #165dff;
 }
 
 .login-consent-text {
   flex: 0 1 auto;
   max-width: 520rpx;
   margin-left: 12rpx;
-  color: #77736d;
+  color: #4e5969;
   font-size: 22rpx;
   line-height: 1.7;
 }
 
 .login-consent-link {
-  color: #9f1d24;
+  color: #165dff;
   font-weight: 600;
 }
 </style>

@@ -63,9 +63,8 @@ export default uniHelper({
   ignores: [
     'src/store/**',
     'src/http/**',
-    // 上传基础设施与演示代码：非组件上下文，允许原生 toast
+    // 上传基础设施：非组件上下文，允许原生 toast
     'src/utils/uploadFile.ts',
-    'src/utils/i18n.ts',
     // 第三方图表组件拷贝副本
     'src/components/qiun-data-charts/**',
   ],

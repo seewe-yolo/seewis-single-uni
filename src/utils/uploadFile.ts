@@ -1,3 +1,8 @@
+import { openLoginPopup } from '@/utils/loginPopup'
+import { getResponseMessage, isSuccessResultCode, ResultEnum } from '@/http/tools/enum'
+import { useTokenStore } from '@/store/token'
+import { useUserStore } from '@/store/user'
+
 /**
  * 文件上传钩子函数使用示例
  * @example
@@ -15,12 +20,9 @@
  */
 
 /**
- * 上传文件的URL配置
+ * 上传地址由 api 层提供（@/api/oss 的 OSS_UPLOAD_URL），
+ * 业务封装见 @/services/upload（uploadOssFile），本文件仅保留通用的选择文件 + 进度 + 上传机制
  */
-export const uploadFileUrl = {
-  /** 用户头像上传地址 */
-  USER_AVATAR: `${import.meta.env.VITE_SERVER_BASEURL}/user/avatar`,
-}
 
 /**
  * 通用文件上传函数（支持直接传入文件路径）
@@ -280,11 +282,33 @@ function uploadFile<T>({
       // 确保文件名称合法
       success: (uploadFileRes) => {
         try {
-          // 解析响应数据
-          const { data: _data } = JSON.parse(uploadFileRes.data)
+          // 解析响应数据（R 信封：{ code, msg, data }）
+          const result = JSON.parse(uploadFileRes.data) as { code?: number, msg?: string, data?: T }
+
+          // 登录态失效与 http 层同语义：清除本地登录态并唤起登录弹窗
+          if (uploadFileRes.statusCode === 401 || result.code === ResultEnum.Unauthorized) {
+            const message = getResponseMessage(result, '登录已过期，请重新登录')
+            uni.showToast({ icon: 'none', title: message })
+            useTokenStore().clear()
+            useUserStore().clearUserInfo()
+            openLoginPopup()
+            error.value = true
+            onError?.(new Error(message))
+            return
+          }
+
+          // 业务失败：展示后端提示
+          if (uploadFileRes.statusCode < 200 || uploadFileRes.statusCode >= 300 || !isSuccessResultCode(result.code as number)) {
+            const message = getResponseMessage(result)
+            uni.showToast({ icon: 'none', title: message })
+            error.value = true
+            onError?.(new Error(message))
+            return
+          }
+
           // 上传成功
-          data.value = _data as T
-          onSuccess?.(_data)
+          data.value = result.data as T
+          onSuccess?.(result.data as T)
         }
         catch (err) {
           // 响应解析错误

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { navbarState, useNavbarRegistry } from '@/hooks/useNavbar'
+import { navbarState, SCAN_PAGE, useNavbarRegistry } from '@/hooks/useNavbar'
 import { isPageTabbar } from '@/tabbar/store'
 import { currRoute, getAllPages } from '@/utils'
 
@@ -15,20 +15,20 @@ const props = withDefaults(defineProps<{
   fixed?: boolean
   /** 固定后是否生成等高占位（把页面内容顶下来） */
   placeholder?: boolean
+  /** 是否自身处理状态栏安全区（App.ku.vue 壳层已提供状态栏占位时传 false） */
+  safeAreaInsetTop?: boolean
 }>(), {
   title: '',
   leftArrow: undefined,
   global: false,
   fixed: true,
   placeholder: true,
+  safeAreaInsetTop: true,
 })
 
-/** 扫码页不显示导航栏 */
-const SCAN_PAGE = '/pages/material/index'
+const route = ref('')
 
 const { register, unregister } = useNavbarRegistry()
-
-const route = ref('')
 
 function syncRoute() {
   route.value = currRoute().path
@@ -87,11 +87,11 @@ function handleBack() {
 <template>
   <wd-navbar
     v-if="visible"
-    :title="pageTitle"
     :fixed="fixed"
     :placeholder="placeholder"
-    :safe-area-inset-top="true"
+    :safe-area-inset-top="safeAreaInsetTop"
     :z-index="99"
+    custom-class="fg-navbar-bar"
   >
     <!-- 左侧：返回箭头 + 用户自定义按钮（不绑定 wd-navbar 的 click-left，自定义按钮点击不会误触返回） -->
     <template #left>
@@ -100,8 +100,21 @@ function handleBack() {
       </view>
       <slot name="left" />
     </template>
+    <template #title>
+      <view class="w-full flex items-center justify-center text-center">
+        {{ pageTitle }}
+      </view>
+    </template>
     <template #right>
       <slot name="right" />
     </template>
   </wd-navbar>
 </template>
+
+<style lang="scss">
+/* 导航栏标准高度兜底：部分设备 navBarHeight（胶囊高度 + 上下间距×2）计算偏小，
+   会导致胶囊贴近/溢出条带边缘；min-height 可约束行内 height，无需 !important */
+.fg-navbar-bar {
+  min-height: 44px;
+}
+</style>

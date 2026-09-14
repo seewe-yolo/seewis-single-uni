@@ -1,7 +1,7 @@
 import type { CustomRequestOptions, HttpError, IResponse } from '@/http/types'
 import { useUserStore } from '@/store/user'
 import { useTokenStore } from '@/store/token'
-import { toLoginPage } from '@/utils/toLoginPage'
+import { openLoginPopup } from '@/utils/loginPopup'
 import { createHttpError, getResponseMessage, HttpErrorType, isSuccessResultCode, ResultEnum, ShowMessage } from './tools/enum'
 
 export function http<T>(options: CustomRequestOptions) {
@@ -22,10 +22,13 @@ export function http<T>(options: CustomRequestOptions) {
         const isTokenExpired = res.statusCode === 401 || code === ResultEnum.Unauthorized
 
         if (isTokenExpired) {
-          // 单token模式：登录失效，仅清除本地登录态（会话已在服务端失效，无需请求退出接口）并唤起登录弹窗
+          // 单token模式：登录失效，仅清除本地登录态（会话已在服务端失效，无需请求退出接口）并唤起登录弹窗；
+          // 后端按失效类型返回具体原因（登录已过期 / 被其他设备挤下线 / 被强制下线），提示用户
+          const authMessage = getResponseMessage(responseData, '登录已过期，请重新登录')
+          uni.showToast({ icon: 'none', title: authMessage })
           useTokenStore().clear()
           useUserStore().clearUserInfo()
-          toLoginPage()
+          openLoginPopup()
           return reject(createHttpError({
             type: HttpErrorType.Auth,
             code,

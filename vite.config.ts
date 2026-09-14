@@ -50,7 +50,7 @@ export default defineConfig(({ command, mode }) => {
   // dev 和 build 命令可以分别使用 .env.development 和 .env.production 的环境变量
   // 非 H5 端 dev 也是 build command，最终加载哪个 env 文件以实际 mode 为准。
 
-  const { UNI_PLATFORM, SKIP_OPEN_DEVTOOLS } = process.env
+  const { UNI_PLATFORM, OPEN_DEVTOOLS } = process.env
   console.log('UNI_PLATFORM -> ', UNI_PLATFORM) // 得到 mp-weixin, h5, app 等
 
   const envDir = path.resolve(process.cwd(), 'env')
@@ -172,8 +172,8 @@ export default defineConfig(({ command, mode }) => {
         open: UNI_PLATFORM === 'h5' && mode === 'development',
       }),
       // 自动打开开发者工具插件 (必须修改 .env 文件中的 VITE_WX_APPID)
-      // 上传时通过 SKIP_OPEN_DEVTOOLS=true 跳过
-      SKIP_OPEN_DEVTOOLS !== 'true' && openDevTools({
+      // 默认不自动打开；需要时通过 OPEN_DEVTOOLS=true 开启
+      OPEN_DEVTOOLS === 'true' && openDevTools({
         mode,
         wechatDevtoolsCliPath: WECHAT_DEVTOOLS_CLI_PATH,
       }),

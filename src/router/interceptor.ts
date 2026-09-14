@@ -1,26 +1,10 @@
-import { isMp } from '@uni-helper/uni-env'
-/**
- * by 菲鸽 on 2025-08-19
- * 路由拦截，通常也是登录拦截
- * 黑、白名单的配置，请看 config.ts 文件， EXCLUDE_LOGIN_PATH_LIST
- * 登录页已移除：未登录时不再跳转登录页，而是唤起全局登录弹窗（toLoginPage）
- */
 import { useTokenStore } from '@/store/token'
 import { tabbarStore } from '@/tabbar/store'
-import { getAllPages, getLastPage, parseUrlToObj } from '@/utils/index'
-import { toLoginPage } from '@/utils/toLoginPage'
-import { EXCLUDE_LOGIN_PATH_LIST, isNeedLoginMode } from './config'
+import { getLastPage, parseUrlToObj } from '@/utils/index'
+import { openLoginPopup } from '@/utils/loginPopup'
+import { isNeedLoginPath } from './config'
 
 export const FG_LOG_ENABLE = false
-
-export function judgeIsExcludePath(path: string) {
-  const isDev = import.meta.env.DEV
-  if (!isDev) {
-    return EXCLUDE_LOGIN_PATH_LIST.includes(path)
-  }
-  const allExcludeLoginPages = getAllPages('excludeLoginPath') // dev 环境下，需要每次都重新获取，否则新配置就不会生效
-  return EXCLUDE_LOGIN_PATH_LIST.includes(path) || (isDev && allExcludeLoginPages.some(page => page.path === path))
-}
 
 export const navigateToInterceptor = {
   // 注意，这里的url是 '/' 开头的，如 '/pages/work/index'，跟 'pages.json' 里面的 path 不同
@@ -61,42 +45,19 @@ export const navigateToInterceptor = {
     // 处理直接进入路由非首页时，tabbarIndex 不正确的问题
     tabbarStore.setAutoCurIdx(path)
 
-    // 小程序使用弹窗式登录（无登录页），路由不做登录拦截，由业务操作 / 401 响应唤起登录弹窗
-    if (isMp) {
-      return true // 明确表示允许路由继续执行
-    }
-
     const tokenStore = useTokenStore()
 
-    // 已登录直接放行
+    // 已登录（含本地 token 未过期）直接放行；小程序端登录为弹窗式（无登录页），
+    // 业务分包页面需要有效登录态，未登录或 token 过期时唤起登录弹窗并阻止本次路由；
+    // 运行中 token 被服务端判定失效的场景由 http 层 401 分支兜底（清登录态 + 唤起弹窗）
     if (tokenStore.hasLogin) {
-      return true // 明确表示允许路由继续执行
+      return true
     }
-
-    // #region 1/2 默认需要登录的情况(白名单策略) ---------------------------
-    if (isNeedLoginMode) {
-      // 需要登录里面的 EXCLUDE_LOGIN_PATH_LIST 表示白名单，可以直接通过
-      if (judgeIsExcludePath(path)) {
-        return true // 明确表示允许路由继续执行
-      }
-      // 否则需要登录：唤起全局登录弹窗并阻止本次路由
-      else {
-        toLoginPage()
-        return false // 明确表示阻止原路由继续执行
-      }
+    if (isNeedLoginPath(path)) {
+      openLoginPopup()
+      return false
     }
-    // #endregion 1/2 默认需要登录的情况(白名单策略) ---------------------------
-
-    // #region 2/2 默认不需要登录的情况(黑名单策略) ---------------------------
-    else {
-      // 不需要登录里面的 EXCLUDE_LOGIN_PATH_LIST 表示黑名单，需要登录
-      if (judgeIsExcludePath(path)) {
-        toLoginPage()
-        return false // 明确表示阻止原路由继续执行
-      }
-      return true // 明确表示允许路由继续执行
-    }
-    // #endregion 2/2 默认不需要登录的情况(黑名单策略) ---------------------------
+    return true
   },
 }
 

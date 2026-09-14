@@ -1,9 +1,11 @@
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useToast } from '@wot-ui/ui'
-import { toLoginPage } from '@/utils/toLoginPage'
+import { openLoginPopup } from '@/utils/loginPopup'
 import { useConfirmDialog } from '@/utils/dialog'
-import { logout } from '@/services/auth'
+import { usePageRefresh } from '@/hooks/usePageRefresh'
+import { fetchUserInfo, logout } from '@/services/auth'
 import { useUserStore } from '@/store'
 import { useTokenStore } from '@/store/token'
 
@@ -22,9 +24,47 @@ const { userInfo } = storeToRefs(userStore)
 const confirmDialog = useConfirmDialog()
 const toast = useToast()
 
+const loggedIn = computed(() => tokenStore.hasLogin)
+
+// 下拉刷新：重新拉取当前登录用户信息（未登录时忽略）
+usePageRefresh(async () => {
+  if (!loggedIn.value) {
+    return
+  }
+  await fetchUserInfo()
+})
+const displayName = computed(() => userInfo.value.nickname || userInfo.value.username || '未登录')
+const roleLabel = computed(() => userInfo.value.roles?.[0] || '')
+/** 远程头像直接展示，本地默认图与空值回退为首字圆形 */
+const avatarUrl = computed(() => {
+  const avatar = userInfo.value.avatar
+  return avatar && avatar.startsWith('http') ? avatar : ''
+})
+
+const menus = [
+  { label: '个人信息', hint: '查看与维护基础资料', icon: 'i-carbon-user-avatar', tone: 'blue', route: '/pages-profile/info/index' },
+  { label: '培训记录', hint: '参训与学时归档', icon: 'i-carbon-education', tone: 'teal', route: '/pages-profile/training-record/index' },
+  { label: '消息设置', hint: '通知接收偏好', icon: 'i-carbon-settings', tone: 'amber', route: '/pages-profile/settings/message/index' },
+]
+
+const menuToneClasses: Record<string, string> = {
+  blue: 'text-#165DFF bg-#E8F3FF',
+  teal: 'text-#0FC6C2 bg-#E8FFFB',
+  amber: 'text-#FF7D00 bg-#FFF3E8',
+}
+
+/** 未登录时唤起登录弹窗，已登录跳转目标页 */
+function guardNavigate(route: string) {
+  if (!loggedIn.value) {
+    openLoginPopup()
+    return
+  }
+  uni.navigateTo({ url: route })
+}
+
 // 登录：唤起全局登录弹窗（微信一键登录）
 function handleLogin() {
-  toLoginPage()
+  openLoginPopup()
 }
 
 async function handleLogout() {
@@ -35,37 +75,98 @@ async function handleLogout() {
   await logout()
   // 执行退出登录逻辑
   toast.success('退出登录成功')
-  // #ifdef MP-WEIXIN
-  // 微信小程序，去首页
-  // uni.reLaunch({ url: '/pages/work/index' })
-  // #endif
-  // #ifndef MP-WEIXIN
-  // 非微信小程序，去登录页
-  // uni.navigateTo({ url: LOGIN_PAGE })
-  // #endif
 }
 </script>
 
 <template>
-  <view class="profile-container">
-    <wd-toast />
-    <wd-dialog />
-    <view class="mt-3 break-all px-3 text-center text-green-500">
-      {{ userInfo.username ? '已登录' : '未登录' }}
-    </view>
-    <view class="mt-3 break-all px-3">
-      {{ JSON.stringify(userInfo, null, 2) }}
-    </view>
-
-    <view class="mt-[60vh] px-3">
-      <view class="m-auto w-160px text-center">
-        <button v-if="tokenStore.hasLogin" type="warn" class="w-full" @click="handleLogout">
-          退出登录
-        </button>
-        <button v-else type="primary" class="w-full" @click="handleLogin">
-          登录
-        </button>
+  <!-- 背景与最小高度由 App.ku.vue 全局壳统一控制 -->
+  <view class="p-32rpx">
+    <!-- 用户卡片：未登录为登录引导态 -->
+    <view
+      class="relative overflow-hidden border border-#f2f3f5 rounded-16px bg-white p-30rpx transition-transform duration-120 active:scale-99"
+      @click="!loggedIn && handleLogin()"
+    >
+      <text class="pointer-events-none absolute text-260rpx text-#165DFF/4 font-bold leading-none -right-20rpx -top-64rpx">
+        储
+      </text>
+      <view class="relative flex items-center">
+        <image
+          v-if="loggedIn && avatarUrl"
+          :src="avatarUrl"
+          class="h-110rpx w-110rpx flex-none border-4rpx border-#E8F3FF rounded-full bg-#E8F3FF"
+          mode="aspectFill"
+        />
+        <view
+          v-else
+          class="h-110rpx w-110rpx flex flex-none items-center justify-center rounded-full bg-#E8F3FF text-#165DFF"
+          :class="loggedIn ? 'text-40rpx font-bold' : 'text-48rpx'"
+        >
+          <text v-if="loggedIn">{{ displayName.slice(0, 1) }}</text>
+          <text v-else class="i-carbon-user-avatar" />
+        </view>
+        <view class="ml-24rpx min-w-0 flex-1">
+          <view class="flex items-center gap-14rpx">
+            <text class="overflow-hidden text-ellipsis whitespace-nowrap text-34rpx text-#1D2129 font-bold">
+              {{ loggedIn ? displayName : '未登录' }}
+            </text>
+            <view
+              v-if="loggedIn && roleLabel"
+              class="flex-none rounded-8rpx bg-#E8F3FF px-12rpx py-4rpx text-20rpx text-#165DFF"
+            >
+              {{ roleLabel }}
+            </view>
+          </view>
+          <text class="mt-10rpx block text-24rpx text-#86909C">
+            {{ loggedIn ? `账号 ${userInfo.username}` : '点击登录，使用完整功能' }}
+          </text>
+        </view>
+        <text
+          v-if="loggedIn"
+          class="i-carbon-chevron-right flex-none text-28rpx text-#86909C"
+          @click.stop="guardNavigate('/pages-profile/info/index')"
+        />
       </view>
     </view>
+
+    <!-- 功能菜单 -->
+    <view class="mx-4rpx mb-18rpx mt-36rpx">
+      <text class="text-30rpx text-#1d2129 font-bold">我的功能</text>
+    </view>
+    <view class="overflow-hidden border border-#f2f3f5 rounded-16px bg-white">
+      <view
+        v-for="(item, index) in menus"
+        :key="item.label"
+        class="mx-24rpx min-h-116rpx flex items-center transition-transform duration-120 active:bg-#F7F8FA"
+        :class="index === menus.length - 1 ? '' : 'border-b border-#f2f3f5'"
+        @click="guardNavigate(item.route)"
+      >
+        <view
+          class="h-64rpx w-64rpx flex flex-none items-center justify-center rounded-16rpx text-30rpx"
+          :class="menuToneClasses[item.tone]"
+        >
+          <text :class="item.icon" />
+        </view>
+        <view class="ml-20rpx min-w-0 flex-1">
+          <text class="block text-27rpx text-#1d2129 font-semibold">{{ item.label }}</text>
+          <text class="mt-4rpx block text-20rpx text-#86909c">{{ item.hint }}</text>
+        </view>
+        <text class="i-carbon-chevron-right flex-none text-28rpx text-#C9CDD4" />
+      </view>
+    </view>
+
+    <!-- 退出登录（仅登录态展示） -->
+    <wd-button
+      v-if="loggedIn"
+      block
+      custom-class="profile-logout"
+      custom-style="height:96rpx;margin-top:36rpx;border:none;background:#ffffff;color:#F53F3F;font-size:28rpx;font-weight:600;border-radius:16px;box-shadow:0 4rpx 12rpx rgba(0,0,0,0.04);"
+      @click="handleLogout"
+    >
+      退出登录
+    </wd-button>
+
+    <text class="mt-28rpx block text-center text-20rpx text-#C9CDD4">
+      安储云 · 应急物资安全储备管理
+    </text>
   </view>
 </template>

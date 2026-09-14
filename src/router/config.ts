@@ -18,3 +18,20 @@ export const EXCLUDE_LOGIN_PATH_LIST = [
   '/pages-sub/xxx/index', // 示例值
   ...excludeLoginPathList, // 都是以 / 开头的 path
 ]
+
+/**
+ * 需要有效登录态的路由前缀：业务分包页面
+ * 主包页面（工作台/扫码/我的）为公共页不拦截；未登录或 token 过期时唤起登录弹窗并阻止跳转
+ */
+export const NEED_LOGIN_PATH_PREFIXES = [
+  '/pages-work',
+  '/pages-material',
+  '/pages-emergency',
+  '/pages-training',
+  '/pages-profile',
+]
+
+/** 判断路由是否需要登录（业务分包前缀命中即需要） */
+export function isNeedLoginPath(path: string) {
+  return NEED_LOGIN_PATH_PREFIXES.some(prefix => path.startsWith(prefix))
+}
