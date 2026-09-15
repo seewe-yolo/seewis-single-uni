@@ -1,8 +1,10 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import type { ICaptcha } from '@/api/types/login'
+import { ref, watch } from 'vue'
 import { useToast } from '@wot-ui/ui'
+import { getCode } from '@/api/login'
 import { useLoginPopup } from '@/hooks/useLoginPopup'
-import { loginByWechat } from '@/services/auth'
+import { loginByPassword, loginByWechat } from '@/services/auth'
 
 // 品牌名来自环境变量（安储云）
 const APP_TITLE = import.meta.env.VITE_APP_TITLE || '安储云'
@@ -11,8 +13,31 @@ const { state, close } = useLoginPopup()
 // 轻提示（必须在 setup 顶层调用，内部依赖 inject）
 const toast = useToast()
 
+/** 登录方式切换（wd-tabs 以 name 回写）：wechat-微信登录 account-账号登录 */
+const activeTab = ref<'wechat' | 'account'>('wechat')
 const agreed = ref(false)
 const loading = ref(false)
+const username = ref('')
+const password = ref('')
+/** 图形验证码（后端关闭验证码时 captchaEnabled=false，不展示输入行） */
+const captcha = ref<ICaptcha | null>(null)
+const captchaCode = ref('')
+
+/** 拉取图形验证码 */
+async function loadCaptcha() {
+  try {
+    captcha.value = await getCode()
+  }
+  catch {
+    // 失败提示由 http 层统一 toast；提交校验会兜底提示
+  }
+}
+
+/** 切到账号登录页签时加载验证码 */
+watch(activeTab, (tab) => {
+  if (tab === 'account' && !captcha.value)
+    loadCaptcha()
+})
 
 /** 品牌价值点（纯展示） */
 const features = [
@@ -21,12 +46,19 @@ const features = [
   { icon: 'i-carbon-education', label: '安全学习' },
 ]
 
-/** 微信一键登录：获取 code → services/auth 调后端换取 token */
-async function handleWxLogin() {
+/** 登录前统一校验：协议必须勾选 */
+function ensureAgreed() {
   if (!agreed.value) {
     toast.show('请先阅读并同意用户协议与隐私政策')
-    return
+    return false
   }
+  return true
+}
+
+/** 微信一键登录：获取 code → services/auth 调后端换取 token */
+async function handleWxLogin() {
+  if (!ensureAgreed())
+    return
   loading.value = true
   try {
     await loginByWechat()
@@ -35,6 +67,44 @@ async function handleWxLogin() {
   }
   catch {
     // 失败提示由 http 层统一 toast，保持弹窗打开便于重试
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+/** 账号密码登录：校验非空 → services/auth 走 password 授权类型 */
+async function handleAccountLogin() {
+  if (!ensureAgreed())
+    return
+  if (!username.value.trim()) {
+    toast.show('请输入账号')
+    return
+  }
+  if (!password.value) {
+    toast.show('请输入密码')
+    return
+  }
+  if (captcha.value?.captchaEnabled && !captchaCode.value.trim()) {
+    toast.show('请输入验证码')
+    return
+  }
+  loading.value = true
+  try {
+    await loginByPassword({
+      username: username.value.trim(),
+      password: password.value,
+      code: captcha.value?.captchaEnabled ? captchaCode.value.trim() : undefined,
+      uuid: captcha.value?.captchaEnabled ? captcha.value.uuid : undefined,
+    })
+    toast.success('登录成功')
+    close()
+  }
+  catch {
+    // 失败提示由 http 层统一 toast；验证码一次性有效，失败后换新再重试
+    captchaCode.value = ''
+    if (captcha.value?.captchaEnabled)
+      loadCaptcha()
   }
   finally {
     loading.value = false
@@ -80,7 +150,16 @@ async function handleWxLogin() {
         </view>
       </view>
 
-      <view class="login-actions">
+      <!-- 登录方式切换：微信一键登录 / 账号密码登录 -->
+      <view class="login-tabs">
+        <wd-tabs v-model="activeTab" color="#165DFF">
+          <wd-tab title="微信登录" name="wechat" />
+          <wd-tab title="账号登录" name="account" />
+        </wd-tabs>
+      </view>
+
+      <!-- 微信一键登录 -->
+      <view v-if="activeTab === 'wechat'" class="login-actions">
         <wd-button
           block
           :loading="loading"
@@ -98,27 +177,74 @@ async function handleWxLogin() {
             <!-- #endif -->
           </view>
         </wd-button>
+      </view>
 
-        <view class="login-consent" @click="agreed = !agreed">
-          <view class="login-checkbox" :class="{ 'login-checkbox-checked': agreed }">
-            <text v-if="agreed" class="i-carbon-checkmark text-20rpx text-white" />
-          </view>
-          <text class="login-consent-text">
-            我已阅读并同意<text class="login-consent-link">《用户协议》</text>和<text class="login-consent-link">《隐私政策》</text>
-          </text>
+      <!-- 账号密码登录 -->
+      <view v-else class="login-actions">
+        <view class="login-field">
+          <text class="login-field-icon i-carbon-user-avatar" />
+          <wd-input
+            v-model="username"
+            placeholder="请输入账号"
+            custom-style="flex:1;background:transparent;"
+            :clearable="true"
+          />
         </view>
-
+        <view class="login-field login-field-password">
+          <text class="login-field-icon i-carbon-locked" />
+          <wd-input
+            v-model="password"
+            placeholder="请输入密码"
+            custom-style="flex:1;background:transparent;"
+            :show-password="true"
+          />
+        </view>
+        <view v-if="captcha?.captchaEnabled" class="login-field login-field-captcha">
+          <text class="login-field-icon i-carbon-password" />
+          <wd-input
+            v-model="captchaCode"
+            placeholder="请输入验证码"
+            custom-style="flex:1;background:transparent;"
+            :clearable="true"
+          />
+          <image
+            v-if="captcha?.img"
+            class="h-64rpx w-176rpx flex-none rounded-8rpx bg-#f2f3f5"
+            :src="`data:image/gif;base64,${captcha.img}`"
+            mode="aspectFill"
+            @click="loadCaptcha"
+          />
+        </view>
         <wd-button
           block
-          variant="text"
-          type="info"
+          :loading="loading"
           :disabled="loading"
-          custom-style="height:72rpx;margin-top:12rpx;color:#8a8883;font-size:26rpx;"
-          @click="close"
+          custom-style="height:96rpx;border:none;border-radius:24rpx;background:#165DFF;color:#ffffff;font-size:30rpx;font-weight:600;box-shadow:0 12rpx 28rpx rgba(22,93,255,0.22);margin-top:28rpx;"
+          @click="handleAccountLogin"
         >
-          暂不登录
+          登录
         </wd-button>
       </view>
+
+      <view class="login-consent" @click="agreed = !agreed">
+        <view class="login-checkbox" :class="{ 'login-checkbox-checked': agreed }">
+          <text v-if="agreed" class="i-carbon-checkmark text-20rpx text-white" />
+        </view>
+        <text class="login-consent-text">
+          我已阅读并同意<text class="login-consent-link">《用户协议》</text>和<text class="login-consent-link">《隐私政策》</text>
+        </text>
+      </view>
+
+      <wd-button
+        block
+        variant="text"
+        type="info"
+        :disabled="loading"
+        custom-style="height:72rpx;margin-top:12rpx;color:#8a8883;font-size:26rpx;"
+        @click="close"
+      >
+        暂不登录
+      </wd-button>
     </view>
   </wd-action-sheet>
 </template>
@@ -249,8 +375,35 @@ async function handleWxLogin() {
   font-size: 30rpx;
 }
 
+.login-tabs {
+  margin-top: 32rpx;
+}
+
 .login-actions {
   margin-top: 32rpx;
+}
+
+.login-field {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 6rpx 24rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+}
+
+.login-field-password {
+  margin-top: 24rpx;
+}
+
+.login-field-captcha {
+  margin-top: 24rpx;
+}
+
+.login-field-icon {
+  flex: none;
+  color: #86909c;
+  font-size: 34rpx;
 }
 
 .login-submit-content {

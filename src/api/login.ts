@@ -1,4 +1,4 @@
-import type { IAuthLoginRes, IGetUserInfoRes, ILoginBody, IRegisterBody } from './types/login'
+import type { IAuthLoginRes, ICaptcha, IGetUserInfoRes, ILoginBody, IRegisterBody } from './types/login'
 import { http } from '@/http/http'
 
 /**
@@ -9,6 +9,14 @@ import { http } from '@/http/http'
  */
 export function login(data: ILoginBody) {
   return http.post<IAuthLoginRes>('/auth/login', data)
+}
+
+/**
+ * 获取图形验证码（grantType=password 登录用）
+ * 后端关闭验证码时返回 captchaEnabled=false，无需展示验证码输入
+ */
+export function getCode() {
+  return http.get<ICaptcha>('/auth/code')
 }
 
 /**

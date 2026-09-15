@@ -5,6 +5,8 @@ import { usePageRefresh } from '@/hooks/usePageRefresh'
 import { fetchUserInfo } from '@/services/auth'
 import { useUserStore } from '@/store'
 import { useTokenStore } from '@/store/token'
+import type { WorkbenchMenuItem } from './workbench-menu'
+import { getVisibleWorkbenchMenus } from './workbench-menu'
 
 defineOptions({
   name: 'Workbench',
@@ -30,11 +32,10 @@ usePageRefresh(async () => {
   await fetchUserInfo()
 })
 
-const quickActions = [
-  { label: '领用申请', hint: '申请应急物资', icon: 'i-carbon-box', tone: 'blue', route: '/pages-material/requisition/apply/index' },
-  { label: '应急调用', hint: '就近调用资源', icon: 'i-carbon-warning-alt', tone: 'red', route: '/pages-emergency/points/index/index' },
-  { label: '安全学习', hint: '课程 / 考试', icon: 'i-carbon-education', tone: 'teal', route: '/pages-work/training/index' },
-]
+const quickActions = computed(() => getVisibleWorkbenchMenus({
+  roles: userInfo.value.roles,
+  permissions: userInfo.value.permissions,
+}))
 
 const todoItems = [
   { type: '审批', title: '呼吸器领用申请', meta: '张三 · 15 分钟前', tone: 'blue', route: '/pages-work/approval/detail/index' },
@@ -52,6 +53,7 @@ const quickToneClasses: Record<string, string> = {
   blue: 'text-#165DFF bg-#E8F3FF',
   teal: 'text-#0FC6C2 bg-#E8FFFB',
   red: 'text-#F53F3F bg-#FFF1F0',
+  amber: 'text-#FF7D00 bg-#FFF3E8',
 }
 
 const todoToneClasses: Record<string, string> = {
@@ -66,7 +68,7 @@ const recentToneClasses: Record<string, string> = {
   blue: 'bg-#165DFF',
 }
 
-function handleQuickAction(action: typeof quickActions[number]) {
+function handleQuickAction(action: WorkbenchMenuItem) {
   uni.navigateTo({ url: action.route })
 }
 
@@ -127,7 +129,7 @@ function goTodoList() {
     <view class="grid grid-cols-3 gap-16rpx">
       <view
         v-for="action in quickActions"
-        :key="action.label"
+        :key="action.key"
         class="min-w-0 flex flex-col items-center border border-#f2f3f5 rounded-16px bg-white p-[18rpx_8rpx_16rpx] transition-transform duration-120 active:scale-97"
         @click="handleQuickAction(action)"
       >

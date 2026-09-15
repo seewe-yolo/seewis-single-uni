@@ -35,6 +35,18 @@ export interface IRegisterBody extends ILoginBody {
 }
 
 /**
+ * /auth/code 响应（后端 CaptchaVo）
+ */
+export interface ICaptcha {
+  /** 是否启用验证码（false 时 uuid/img 为空，无需展示验证码输入） */
+  captchaEnabled: boolean
+  /** 验证码唯一标识（登录时随 code 回传） */
+  uuid?: string
+  /** Base64 图片数据（不含 data:image 前缀） */
+  img?: string
+}
+
+/**
  * 登录返回的令牌信息（后端 LoginVo，字段为 snake_case）
  */
 export interface IAuthLoginRes {
