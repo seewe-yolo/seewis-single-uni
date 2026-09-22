@@ -90,18 +90,18 @@ export default defineConfig(({ command, mode }) => {
         exclude: ['**/components/**/**.*', '**/sections/**/**.*'],
         // pages 目录为 src/pages，分包目录不能配置在pages目录下！！
         // 是个数组，可以配置多个，但是不能为pages里面的目录！！
-        // "src/pages-demo" 是unibest demo 预留的，方便后续插入demo示例
+        // "src/pages-demo" 是模板示例预留的，方便后续插入 demo 页面
         subPackages: [
           'src/pages-demo',
-          // 工作台 Tab 承接：待办/预警/审批/消息
+          // 工作示例 Tab 承接：页面、权限与流程示例
           'src/pages-work',
-          // 扫码 Tab 承接：领用归还/出入库/盘点/点检/物资查询
+          // 物资示例 Tab 承接：表单、列表与扫码示例
           'src/pages-material',
-          // 战时应急：就近点位/紧急出库/事后补录/事件登记
+          // 应急示例：点位、事件与补录页面
           'src/pages-emergency',
-          // 安全学习 Tab 承接：学习任务/课程/考试/线下活动
+          // 培训示例 Tab 承接：任务、课程、考试与活动页面
           'src/pages-training',
-          // 我的 Tab 承接：个人信息/培训档案/消息设置
+          // 个人中心示例：信息、记录与设置页面
           'src/pages-profile',
         ],
         dts: 'src/types/uni-pages.d.ts',

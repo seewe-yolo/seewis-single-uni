@@ -1,8 +1,8 @@
 [
   {
     "key": "requisition-apply",
-    "label": "领用申请",
-    "hint": "申请应急物资",
+    "label": "表单示例",
+    "hint": "展示表单校验与提交",
     "icon": "i-carbon-box",
     "tone": "blue",
     "route": "/pages-material/requisition/apply/index",
@@ -10,8 +10,8 @@
   },
   {
     "key": "emergency-call",
-    "label": "应急调用",
-    "hint": "就近调用资源",
+    "label": "组件示例",
+    "hint": "展示弹窗与交互组件",
     "icon": "i-carbon-warning-alt",
     "tone": "red",
     "route": "/pages-emergency/points/index/index",
@@ -19,8 +19,8 @@
   },
   {
     "key": "safety-learning",
-    "label": "安全学习",
-    "hint": "课程 / 考试",
+    "label": "页面示例",
+    "hint": "展示分包页面组织",
     "icon": "i-carbon-education",
     "tone": "teal",
     "route": "/pages-work/training/index",

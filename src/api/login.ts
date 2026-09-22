@@ -8,7 +8,7 @@ import { http } from '@/http/http'
  * @param data 登录请求体（后端 LoginBody）
  */
 export function login(data: ILoginBody) {
-  return http.post<IAuthLoginRes>('/auth/login', data)
+  return http.post<IAuthLoginRes>('/auth/login', data, undefined, undefined, { encrypt: true })
 }
 
 /**
@@ -24,7 +24,7 @@ export function getCode() {
  * @param data 注册请求体（后端 RegisterBody）
  */
 export function register(data: IRegisterBody) {
-  return http.post<void>('/auth/register', data)
+  return http.post<void>('/auth/register', data, undefined, undefined, { encrypt: true })
 }
 
 /**

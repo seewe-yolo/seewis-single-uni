@@ -5,7 +5,7 @@ export default defineUniPages({
   globalStyle: {
     // 全局自定义导航栏（wd-navbar），由布局中的 FgNavbar 统一渲染
     navigationStyle: 'custom',
-    navigationBarTitleText: '安储云',
+    navigationBarTitleText: 'seewis-single-uni',
     navigationBarBackgroundColor: '#f8f8f8',
     navigationBarTextStyle: 'black',
     backgroundColor: '#FFFFFF',

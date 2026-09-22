@@ -5,8 +5,6 @@ import { useUserStore } from '@/store/user'
 
 /** 客户端id：需为 sys_client 中配置且授权类型包含对应 grantType 的客户端 */
 const CLIENT_ID = import.meta.env.VITE_APP_CLIENT_ID
-/** 当前系统未启用多租户，与管理端保持一致 */
-const TENANT_ID = '000000'
 
 /**
  * 登录后统一处理：缓存 token 并拉取用户信息
@@ -37,7 +35,7 @@ function getWxCode() {
  * 账号密码登录
  */
 export async function loginByPassword(form: { username: string, password: string, code?: string, uuid?: string }) {
-  const body: ILoginBody = { clientId: CLIENT_ID, tenantId: TENANT_ID, grantType: 'password', ...form }
+  const body: ILoginBody = { clientId: CLIENT_ID, grantType: 'password', ...form }
   const res = await loginApi(body)
   await postLogin(res)
   return res
@@ -51,7 +49,6 @@ export async function loginByWechat() {
   const xcxCode = await getWxCode()
   const body: ILoginBody = {
     clientId: CLIENT_ID,
-    tenantId: TENANT_ID,
     grantType: 'xcx',
     xcxCode,
   }
@@ -64,7 +61,7 @@ export async function loginByWechat() {
  * 用户注册
  */
 export async function registerAccount(data: { username: string, password: string }) {
-  return registerApi({ clientId: CLIENT_ID, tenantId: TENANT_ID, grantType: 'password', ...data })
+  return registerApi({ clientId: CLIENT_ID, grantType: 'password', ...data })
 }
 
 /**
@@ -78,7 +75,7 @@ export async function fetchUserInfo(): Promise<IUserInfoRes> {
     userId: user.userId,
     username: user.userName,
     nickname: user.nickName,
-    avatar: user.avatarUrl,
+    avatar: user.avatar,
     roles: res.roles,
     permissions: res.permissions,
   }

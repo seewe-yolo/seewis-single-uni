@@ -1,11 +1,11 @@
 {
-  "tabbar.home": "Workbench",
+  "tabbar.home": "Home",
   "tabbar.scan": "Scan",
-  "tabbar.about": "About",
+  "tabbar.about": "About Template",
   "tabbar.me": "Me",
   "tabbar.i18n": "I18n",
-  "i18n.title": "En Title",
-  "alova.title": "Alova Request",
+  "i18n.title": "I18n Example",
+  "alova.title": "Request Example",
   "weight": "{heavy}KG",
   "detail": "{0}cm, {1}KG",
   "introduction": "I am {name},height:{detail.height},weight:{detail.weight}"

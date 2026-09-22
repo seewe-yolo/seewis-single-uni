@@ -56,7 +56,7 @@ export const customTabbarList: CustomTabBarItem[] = [
     icon: 'i-carbon-home',
     // badge: 'dot',
   },
-  // 中央鼓包：统一扫码器（按码类型路由：物资码/盘点码/签到码/应急柜码）
+  // 中央鼓包：模板示例入口
   {
     text: '%tabbar.scan%',
     pagePath: 'pages/material/index',

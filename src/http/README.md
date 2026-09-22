@@ -46,6 +46,12 @@ catch (error) {
 }
 ```
 
+## 与 seewis-single-admin 后端对齐
+
+- 受保护接口由拦截器统一注入 `Authorization: Bearer <token>` 和 `clientid`。
+- `/auth/login`、`/auth/register` 对应后端 `@ApiEncrypt`，调用时传入 `{ encrypt: true }`，请求体按 AES-ECB-PKCS7 加密，密钥按 RSA 公钥加密后放入 `encrypt-key` 请求头。
+- 当前后端已确认提供认证、用户信息和 OSS 接口；物资业务 `/app/material/*` 尚未在后端 Controller 中提供，相关页面仍属于前端示例接口，不能当作已联调契约。
+
 如果调用方需要自行处理错误提示，可以传入 `hideErrorToast: true`：
 
 ```ts

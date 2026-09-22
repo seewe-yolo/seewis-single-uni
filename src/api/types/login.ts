@@ -6,8 +6,6 @@ export interface ILoginBody {
   clientId: string
   /** 授权类型：password 账号密码 / xcx 微信小程序 */
   grantType: 'password' | 'xcx'
-  /** 租户id（当前系统未启用多租户，固定 000000） */
-  tenantId?: string
   /** 图形验证码（grantType=password 且后端开启验证码时必填） */
   code?: string
   /** 验证码唯一标识 */
@@ -92,8 +90,6 @@ export interface IGetUserInfoRes {
     nickName: string
     /** 头像 ossId */
     avatar?: string
-    /** 头像访问地址（由 ossId 翻译而来） */
-    avatarUrl?: string
     userType?: string
     [key: string]: any
   }

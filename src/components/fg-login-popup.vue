@@ -6,8 +6,8 @@ import { getCode } from '@/api/login'
 import { useLoginPopup } from '@/hooks/useLoginPopup'
 import { loginByPassword, loginByWechat } from '@/services/auth'
 
-// 品牌名来自环境变量（安储云）
-const APP_TITLE = import.meta.env.VITE_APP_TITLE || '安储云'
+// 品牌名来自环境变量
+const APP_TITLE = import.meta.env.VITE_APP_TITLE || 'seewis-single-uni'
 
 const { state, close } = useLoginPopup()
 // 轻提示（必须在 setup 顶层调用，内部依赖 inject）
@@ -41,9 +41,9 @@ watch(activeTab, (tab) => {
 
 /** 品牌价值点（纯展示） */
 const features = [
-  { icon: 'i-carbon-scan', label: '扫码作业' },
-  { icon: 'i-carbon-document-view', label: '过程留痕' },
-  { icon: 'i-carbon-education', label: '安全学习' },
+  { icon: 'i-carbon-application', label: '页面示例' },
+  { icon: 'i-carbon-document-view', label: '组件能力' },
+  { icon: 'i-carbon-education', label: '多端运行' },
 ]
 
 /** 登录前统一校验：协议必须勾选 */
@@ -120,22 +120,22 @@ async function handleAccountLogin() {
       <wd-icon custom-class="wd-action-sheet__close" name="close" @click="!loading && onClose()" />
     </template>
     <view class="login-sheet" style="padding-bottom: calc(env(safe-area-inset-bottom) + 36rpx);">
-      <text class="login-watermark" aria-hidden="true">储</text>
+      <text class="login-watermark" aria-hidden="true">S</text>
       <view class="login-handle" />
 
       <view class="login-toolbar">
         <view class="login-mark">
-          <text class="i-carbon-security text-38rpx text-white" />
+          <text class="i-carbon-code text-38rpx text-white" />
         </view>
         <view class="login-brand">
-          <text class="login-eyebrow">安全应急物资平台</text>
+          <text class="login-eyebrow">uni-app 小程序开发模板</text>
           <text class="login-brand-name">{{ APP_TITLE }}</text>
         </view>
       </view>
 
       <view class="login-copy">
-        <text class="login-title">登录后继续使用平台功能</text>
-        <text class="login-subtitle">扫码、领用、应急调用与安全学习，一次登录即可使用</text>
+        <text class="login-title">登录后继续使用模板能力</text>
+        <text class="login-subtitle">页面、组件、请求与多端能力，开箱即可开始开发</text>
       </view>
 
       <view class="login-trust-list">

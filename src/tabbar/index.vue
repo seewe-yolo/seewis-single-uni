@@ -16,9 +16,9 @@ defineOptions({
 const scanMenuOpen = ref(false)
 
 const scanActions = [
-  { label: '扫码出库', icon: 'i-carbon-upload', className: 'scan-action-left', route: '/pages-material/requisition/outbound/index' },
-  { label: '物资领用', icon: 'i-carbon-box', className: 'scan-action-center', route: '/pages-material/requisition/apply/index' },
-  { label: '扫码入库', icon: 'i-carbon-download', className: 'scan-action-right', route: '/pages-material/stock/inbound/index' },
+  { label: '图表示例', icon: 'i-carbon-upload', className: 'scan-action-left', route: '/pages-demo/ucharts/index' },
+  { label: '表单示例', icon: 'i-carbon-box', className: 'scan-action-center', route: '/pages-material/requisition/apply/index' },
+  { label: '列表示例', icon: 'i-carbon-download', className: 'scan-action-right', route: '/pages-material/requisition/list/index' },
 ]
 
 function closeScanMenu() {
@@ -30,7 +30,7 @@ function handleScanAction(action: typeof scanActions[number]) {
   uni.navigateTo({ url: action.route })
 }
 
-/** tabbarItem 点击事件：中央鼓包展开扫码作业扇形菜单 */
+/** tabbarItem 点击事件：中央鼓包展开模板示例菜单 */
 function handleClick(index: number) {
   const list = tabbarList.value
   const item = list[index]

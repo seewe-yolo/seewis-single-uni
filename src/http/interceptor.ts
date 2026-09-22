@@ -2,6 +2,7 @@ import type { CustomRequestOptions } from '@/http/types'
 import { useTokenStore } from '@/store'
 import { getEnvBaseUrl } from '@/utils'
 import { stringifyQuery } from './tools/queryString'
+import { encryptRequestBody } from './crypto'
 
 // 请求基准地址
 const baseUrl = getEnvBaseUrl()
@@ -15,6 +16,9 @@ const httpInterceptor = {
     // return options
 
     // 非 alova 请求，正常执行
+    const shouldEncrypt = options.encrypt === true
+    delete options.encrypt
+
     // 接口请求支持通过 query 参数配置 queryString
     if (options.query) {
       const queryStr = stringifyQuery(options.query)
@@ -47,6 +51,19 @@ const httpInterceptor = {
     // 2. （可选）添加小程序端请求头标识
     options.header = {
       ...options.header,
+    }
+
+    // 后端 SecurityConfig 使用 clientid 校验 token 归属，所有请求统一携带。
+    const clientId = import.meta.env.VITE_APP_CLIENT_ID
+    if (clientId) {
+      options.header.clientid = clientId
+    }
+
+    // /auth/login、/auth/register 标注了 @ApiEncrypt，必须先加密 body 再发送。
+    if (shouldEncrypt && import.meta.env.VITE_API_ENCRYPT_ENABLE === 'true') {
+      const { body, encryptedKey } = encryptRequestBody(options.data, import.meta.env.VITE_API_ENCRYPT_PUBLIC_KEY)
+      options.data = body
+      options.header[import.meta.env.VITE_API_ENCRYPT_HEADER || 'encrypt-key'] = encryptedKey
     }
     // 3. 添加 token 请求头标识
     const tokenStore = useTokenStore()

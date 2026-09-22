@@ -87,7 +87,7 @@ async function handleLogout() {
       @click="!loggedIn && handleLogin()"
     >
       <text class="pointer-events-none absolute text-260rpx text-#165DFF/4 font-bold leading-none -right-20rpx -top-64rpx">
-        储
+        S
       </text>
       <view class="relative flex items-center">
         <image
@@ -117,7 +117,7 @@ async function handleLogout() {
             </view>
           </view>
           <text class="mt-10rpx block text-24rpx text-#86909C">
-            {{ loggedIn ? `账号 ${userInfo.username}` : '点击登录，使用完整功能' }}
+            {{ loggedIn ? `账号 ${userInfo.username}` : '点击登录，使用模板能力' }}
           </text>
         </view>
         <text
@@ -166,7 +166,7 @@ async function handleLogout() {
     </wd-button>
 
     <text class="mt-28rpx block text-center text-20rpx text-#C9CDD4">
-      安储云 · 应急物资安全储备管理
+      seewis-single-uni · uni-app 小程序开发模板
     </text>
   </view>
 </template>
