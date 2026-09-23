@@ -45,12 +45,13 @@ export async function loginByPassword(form: { username: string, password: string
  * 微信小程序一键登录（wx.login 取 code → 后端换取 token）
  * appid/appsecret 由后端 sys_config 或 justauth yml 配置决定，前端不传
  */
-export async function loginByWechat() {
+export async function loginByWechat(phoneCode: string) {
   const xcxCode = await getWxCode()
   const body: ILoginBody = {
     clientId: CLIENT_ID,
     grantType: 'xcx',
     xcxCode,
+    phoneCode,
   }
   const res = await loginApi(body)
   await postLogin(res)

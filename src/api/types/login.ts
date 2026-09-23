@@ -18,6 +18,8 @@ export interface ILoginBody {
   appid?: string
   /** grantType=xcx：wx.login 获取的授权 code */
   xcxCode?: string
+  /** grantType=xcx：wx.getPhoneNumber 获取的手机号授权 code */
+  phoneCode?: string
 }
 
 /**

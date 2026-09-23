@@ -55,13 +55,18 @@ function ensureAgreed() {
   return true
 }
 
-/** 微信一键登录：获取 code → services/auth 调后端换取 token */
-async function handleWxLogin() {
+/** 微信一键登录：获取手机号授权 code → services/auth 调后端换取 token */
+async function handleWxLogin(event: { detail?: { code?: string } }) {
   if (!ensureAgreed())
     return
+  const phoneCode = event.detail?.code
+  if (!phoneCode) {
+    toast.show('请授权微信手机号后登录')
+    return
+  }
   loading.value = true
   try {
-    await loginByWechat()
+    await loginByWechat(phoneCode)
     toast.success('登录成功')
     close()
   }
@@ -164,8 +169,9 @@ async function handleAccountLogin() {
           block
           :loading="loading"
           :disabled="loading"
+          open-type="getPhoneNumber"
           custom-style="height:96rpx;border:none;border-radius:24rpx;background:#165DFF;color:#ffffff;font-size:30rpx;font-weight:600;box-shadow:0 12rpx 28rpx rgba(22,93,255,0.22);"
-          @click="handleWxLogin"
+          @getphonenumber="handleWxLogin"
         >
           <view class="login-submit-content">
             <text class="login-submit-icon i-carbon-logo-wechat" />
